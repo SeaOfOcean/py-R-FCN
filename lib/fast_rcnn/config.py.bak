@@ -21,7 +21,6 @@ import os.path as osp
 import numpy as np
 # `pip install easydict` if you don't have it
 from easydict import EasyDict as edict
-import pprint
 
 __C = edict()
 # Consumers can get config by:
@@ -260,7 +259,6 @@ def _merge_a_into_b(a, b):
         else:
             b[k] = v
 
-
 def cfg_from_file(filename):
     """Load a config file and merge it into the default options."""
     import yaml
@@ -268,8 +266,6 @@ def cfg_from_file(filename):
         yaml_cfg = edict(yaml.load(f))
 
     _merge_a_into_b(yaml_cfg, __C)
-    pprint.pprint(__C)
-    print '-----------{}'.format(__C.TRAIN.PROPOSAL_METHOD)
 
 def cfg_from_list(cfg_list):
     """Set config keys via list (e.g., from command line)."""
