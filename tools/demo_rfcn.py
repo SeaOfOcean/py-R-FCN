@@ -37,7 +37,7 @@ NETS = {'ResNet-101': ('ResNet-101',
                   'resnet50_rfcn_final.caffemodel')}
 
 
-def vis_detections(im, class_name, dets, thresh=0.5):
+def vis_detections(im, class_name, image_name, dets, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
@@ -68,12 +68,15 @@ def vis_detections(im, class_name, dets, thresh=0.5):
     plt.axis('off')
     plt.tight_layout()
     plt.draw()
+    if class_name == 'car' or class_name == 'person':
+        plt.savefig('demo_output/res_' + image_name[:-4] + '_' + class_name + '.jpg')
+
 
 def demo(net, image_name):
     """Detect object classes in an image using pre-computed object proposals."""
 
     # Load the demo image
-    im_file = os.path.join(cfg.DATA_DIR, 'demo', image_name)
+    im_file = os.path.join(cfg.DATA_DIR, args.image_folder, image_name)
     im = cv2.imread(im_file)
 
     # Detect all object classes and regress object bounds
@@ -95,7 +98,7 @@ def demo(net, image_name):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-        vis_detections(im, cls, dets, thresh=CONF_THRESH)
+        vis_detections(im, cls, image_name, dets, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -107,7 +110,9 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--net', dest='demo_net', help='Network to use [ResNet-101]',
                         choices=NETS.keys(), default='ResNet-101')
-
+    parser.add_argument('--f', dest='image_folder', 
+                        help='Folder with images to evaluate', 
+                        default='demo')
     args = parser.parse_args()
 
     return args
@@ -139,12 +144,11 @@ if __name__ == '__main__':
     im = 128 * np.ones((300, 500, 3), dtype=np.uint8)
     for i in xrange(2):
         _, _= im_detect(net, im)
-
-    im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
-                '001763.jpg', '004545.jpg']
+    
+    im_names = os.listdir(cfg.DATA_DIR + "/" + args.image_folder)
     for im_name in im_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        print 'Demo for data/demo/{}'.format(im_name)
+        print 'Demo for {}'.format(im_name)
         demo(net, im_name)
 
-    plt.show()
+    # plt.show()
